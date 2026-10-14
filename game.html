@@ -2217,7 +2217,7 @@ async function requestLandscape(){
 function syncOrientationOverlay(){
  const overlay=$('rotateOverlay');
  if(!overlay)return;
- const needsLandscape=(state==='play'||state==='paused'||state==='edit')&&innerHeight>innerWidth;
+ const so=window.screen&&screen.orientation&&screen.orientation.type;const needsLandscape=(state==='play'||state==='paused'||state==='edit')&&innerHeight>innerWidth&&(!so||so.indexOf('portrait')===0);clearTimeout(window.__rotT);if(needsLandscape){window.__rotT=setTimeout(()=>{if((state==='play'||state==='paused'||state==='edit')&&innerHeight>innerWidth)overlay.style.display='flex'},1000);return}
  overlay.style.display=needsLandscape?'flex':'none';
 }
 $('tryLandscape').onclick=()=>requestLandscape();
