@@ -811,6 +811,7 @@ function applyQuality(){
  renderer.shadowMap.enabled=save.shadows && save.q>0;sun.castShadow=save.shadows && save.q>0;sun.shadow.mapSize.set(save.q===0?256:(save.q===1?640:1024),save.q===0?256:(save.q===1?640:1024));
  scene.traverse(o=>{if(o.material)o.material.needsUpdate=true});
 }
+{const _ss=renderer.setSize.bind(renderer);let lk='';renderer.setSize=function(w,h,u){const kk=w+'x'+h+'@'+renderer.getPixelRatio();if(kk===lk)return;lk=kk;_ss(w,h,u);try{renderer.render(scene,camera)}catch(e){}};}
 addEventListener('resize',()=>{camera.aspect=VW()/VH();camera.updateProjectionMatrix();renderer.setSize(VW(),VH());syncOrientationOverlay()});
 function toast(t){
  const el=$('toast');el.textContent=t;el.style.opacity=1;
@@ -928,7 +929,8 @@ function startAudio(){
  }catch(e){console.log('Audio unavailable',e)}
 }
 addEventListener('pointerdown',()=>{if(state==='play'||state==='paused')startAudio();},{passive:true});
-document.addEventListener('visibilitychange',()=>{if(!document.hidden&&audioCtx&&audioCtx.state==='suspended')audioCtx.resume();});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&audioCtx&&audioCtx.state==='suspended')audioCtx.resume();if(document.hidden){for(const x in k)k[x]=0;if(state==='play'){try{$('pausebtn').onclick()}catch(e){}}}});
+addEventListener('blur',()=>{for(const x in k)k[x]=0;if(state==='play'){try{$('pausebtn').onclick()}catch(e){}}});
 let hornNodes=null;
 function playHorn(){
  if(!audioCtx||!audioReady||!soundEnabled||hornNodes)return;
