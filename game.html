@@ -2193,7 +2193,7 @@ async function requestLandscape(){
  if(button){button.disabled=true;button.textContent='⏳ جاري المحاولة…';}
  let locked=false;
  try{
-   if(!document.fullscreenElement && typeof document.documentElement.requestFullscreen==='function'){
+   if(!document.fullscreenElement && typeof document.documentElement.requestFullscreen==='function' && !(window.matchMedia&&(matchMedia('(display-mode: standalone)').matches||matchMedia('(display-mode: fullscreen)').matches))){
      await document.documentElement.requestFullscreen();
    }
  }catch(_){}
