@@ -894,7 +894,6 @@ let engineVol=1.25,musicVol=0.75;
 let brakeGain=null,brakeOsc=null,shiftGain=null,shiftOsc=null;
 const RADIO_STATIONS=[
  {name:'إيقاف',icon:'🔇',melody:null,tempo:0},
- {name:'راديو القاهرة',icon:'🎵',melody:[392,440,523.25,659.25,587.33,523.25,440,392,329.63,392,440,523.25,440,392,349.23,329.63],tempo:.32,wave:'triangle'},
  {name:'نغمات شعبية',icon:'🎶',melody:[261.63,329.63,392,523.25,392,329.63,293.66,349.23,440,349.23,293.66,261.63,220,261.63,293.66,329.63],tempo:.28,wave:'square'},
  {name:'بيت إلكترو',icon:'🎧',melody:[110,110,165,110,196,165,146.83,110,130.81,130.81,196,130.81,220,196,164.81,130.81],tempo:.22,wave:'sawtooth'},
  {name:'جاز هادئ',icon:'🎷',melody:[349.23,415.3,466.16,523.25,466.16,415.3,392,349.23,311.13,349.23,392,440,392,349.23,311.13,293.66],tempo:.38,wave:'sine'}
@@ -2348,14 +2347,14 @@ function getGlowTex(){if(glowTex)return glowTex;const c=document.createElement('
 function addCarLights(){
  const t=player.t,L1=Math.max(...t.pts.map(p=>p[0])),L0=Math.min(...t.pts.map(p=>p[0]));
  const zF=-(L1+.12),zR=-(L0-.12);
- const hl=new THREE.SpotLight(0xfff1c8,0,95,.62,.5,1.1);hl.position.set(0,.9,zF+.3);
+ const hl=new THREE.SpotLight(0xfff1c8,0,95,.62,.9,1.1);hl.position.set(0,.9,zF+.3);
  const tg=new THREE.Object3D();tg.position.set(0,0,zF-30);player.group.add(hl);player.group.add(tg);hl.target=tg;player.headlights=[hl];
  const mkGlow=(col,sz,x,y,z)=>{const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:getGlowTex(),color:col,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false,fog:false}));sp.scale.set(sz,sz,1);sp.position.set(x,y,z);player.group.add(sp);return sp};
  player.headGlow=[-.62,.62].map(x=>mkGlow(0xfff2c8,1.5,x,.76,zF-.1));
  player.tailGlow=[-.62,.62].map(x=>mkGlow(0xff2a1a,1.1,x,.78,zR+.1));
  const cg=new THREE.ConeGeometry(4.2,17,20,1,true);cg.rotateX(Math.PI/2);cg.translate(0,0,-8.5);
  const beam=new THREE.Mesh(cg,new THREE.MeshBasicMaterial({color:0xfff0c0,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide,fog:false}));
- beam.position.set(0,.8,zF);beam.renderOrder=2;player.group.add(beam);player.beam=beam;
+ beam.position.set(0,.8,zF);beam.renderOrder=2;player.beam=beam;
 }
 function updateLamps(){
  if(!player||!player.tlMat||!player.beam)return;
