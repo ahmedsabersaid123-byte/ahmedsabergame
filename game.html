@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
-<title>Ahmed Saber Game</title>
+<title>Masr Drive</title>
 <style>
 *{box-sizing:border-box;-webkit-user-select:none;user-select:none;touch-action:auto;-webkit-tap-highlight-color:transparent}
 /* Keep game gestures disabled everywhere except the settings panel, which must receive native scrolling. */
@@ -163,7 +163,7 @@ body.control-editing #c{pointer-events:none}
 </div>
 
 <div id="menu">
-  <div id="title">Ahmed Saber Game</div>
+  <div id="title">Masr Drive</div>
   <div id="garageBadge">🔧 الجراج <small>صيانة • تعديل • تطوير</small></div>
   <div id="coins">💰 1000 جنيه</div>
   <button class="btn" id="settings">⚙️ الاعدادات</button>
@@ -640,7 +640,11 @@ const CAR_TYPES=[
  {name:'بيك أب',pts:[[-2.15,.35],[-2.15,.98],[-1.55,1.05],[-.55,1.05],[-.35,1.45],[.65,1.45],[.95,1.02],[2.12,1.02],[2.12,.35]],fa:[.65,1.45],fb:[.2,1.45],ra:[-1.55,1.05],rb:[-.55,1.05],wb:1.38},
  {name:'ميكروباص',pts:[[-2.25,.35],[-2.25,1.35],[-1.85,1.75],[1.65,1.75],[2.15,1.3],[2.15,.35]],fa:[1.65,1.75],fb:[1.15,1.75],ra:[-1.85,1.75],rb:[-1.25,1.75],wb:1.48},
  {name:'رياضية',pts:[[-2.15,.35],[-2.15,.78],[-1.65,1.0],[-.95,1.32],[.6,1.32],[1.1,.95],[2.0,.82],[2.12,.35]],fa:[.6,1.32],fb:[.25,1.32],ra:[-1.65,1.0],rb:[-1.15,1.25],wb:1.32},
- {name:'سيدان كلاسيك',pts:[[-2.15,.35],[-2.15,.95],[-1.7,1.12],[-1.05,1.1],[-.55,1.42],[.45,1.42],[1.0,1.05],[1.8,.95],[2.15,.75],[2.15,.35]],fa:[1.0,1.05],fb:[.45,1.42],ra:[-1.05,1.1],rb:[-.55,1.42],wb:1.35}
+ {name:'سيدان كلاسيك',pts:[[-2.15,.35],[-2.15,.95],[-1.7,1.12],[-1.05,1.1],[-.55,1.42],[.45,1.42],[1.0,1.05],[1.8,.95],[2.15,.75],[2.15,.35]],fa:[1.0,1.05],fb:[.45,1.42],ra:[-1.05,1.1],rb:[-.55,1.42],wb:1.35},
+ {name:'كوبيه',pts:[[-2.1,.35],[-2.1,.9],[-1.5,1.05],[-.9,1.38],[.3,1.38],[.95,.98],[2.1,.88],[2.12,.35]],fa:[.95,.98],fb:[.3,1.38],ra:[-1.5,1.05],rb:[-.9,1.38],wb:1.33,spd:1.08,acc:1.1,hnd:1.05},
+ {name:'ميني كار',pts:[[-1.55,.35],[-1.55,1.0],[-1.3,1.45],[.5,1.45],[.9,1.0],[1.5,.9],[1.6,.7],[1.6,.35]],fa:[.9,1.0],fb:[.5,1.45],ra:[-1.55,1.0],rb:[-1.3,1.45],wb:.95,spd:.9,acc:.95,hnd:1.15},
+ {name:'جيب صحراء',pts:[[-2.05,.5],[-2.05,1.6],[-1.85,1.82],[.5,1.82],[.75,1.38],[2.05,1.25],[2.1,.5]],fa:[.75,1.38],fb:[.5,1.82],ra:[-1.85,1.45],rb:[-1.8,1.8],wb:1.4,ts:1.25,spd:.95,acc:1.05,hnd:.95},
+ {name:'سوبر كار',pts:[[-2.1,.35],[-2.1,.8],[-1.5,.92],[-.8,1.08],[.1,1.12],[.85,.82],[2.1,.62],[2.12,.35]],fa:[.85,.82],fb:[.15,1.12],ra:[-1.5,.92],rb:[-.85,1.08],wb:1.4,spoiler:1,spd:1.18,acc:1.25,hnd:1.1}
 ];
 
 function bx(w,h,d,m,x,y,z){const s=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);s.position.set(x,y,z);return s}
@@ -678,15 +682,21 @@ function buildCar(t,color){
  g.add(bx(1.85,.22,.2,dark,0,.45,-(L1+.02)),bx(1.85,.22,.2,dark,0,.45,-(L0-.02)));
  for(const sx of[-.62,.62]){g.add(bx(.5,.2,.12,hl,sx,.74,-(L1+.04)),bx(.5,.18,.12,tl,sx,.76,-(L0-.04)))}
  if(t.taxi)g.add(bx(.5,.2,.28,new THREE.MeshBasicMaterial({color:0xffe066}),0,1.66,0));
+ {const plate=new THREE.MeshLambertMaterial({color:0xf2f2f2}),chrome=new THREE.MeshPhongMaterial({color:0xd5dae0,shininess:120});
+  g.add(bx(.9,.16,.05,dark,0,.62,-(L1+.05)),bx(.5,.16,.03,plate,0,.46,-(L1+.14)),bx(.5,.16,.03,plate,0,.46,-(L0-.14)));
+  for(const sx of[-1,1])g.add(bx(.16,.1,.24,bodyMat,sx*.97,t.fa[1]+.12,-(t.fa[0]-.15)),bx(.05,.05,.5,chrome,sx*.55,.34,-(L0-.1)));
+  if(t.spoiler){const zz=-(L0+.1);g.add(bx(1.7,.07,.45,dark,0,t.ra[1]+.3,zz),bx(.08,.3,.08,dark,-.6,t.ra[1]+.15,zz),bx(.08,.3,.08,dark,.6,t.ra[1]+.15,zz));}}
 
- const tire=new THREE.CylinderGeometry(.38,.38,.28,20);tire.rotateZ(Math.PI/2);
- const rim=new THREE.CylinderGeometry(.22,.22,.3,8);rim.rotateZ(Math.PI/2);
+ const ts=t.ts||1;
+ const tire=new THREE.CylinderGeometry(.38*ts,.38*ts,.28,20);tire.rotateZ(Math.PI/2);
+ const rim=new THREE.CylinderGeometry(.22*ts,.22*ts,.3,10);rim.rotateZ(Math.PI/2);
+ const hub=new THREE.CylinderGeometry(.09,.09,.33,8);hub.rotateZ(Math.PI/2);
  const tm=new THREE.MeshLambertMaterial({color:0x151515}),rmat=new THREE.MeshPhongMaterial({color:0xbfc5cc,shininess:100});
  const wheels=[];
  for(const sx of[-1,1])for(const fz of[-1,1]){
   const pivot=new THREE.Group(),spin=new THREE.Group();
-  spin.add(new THREE.Mesh(tire,tm),new THREE.Mesh(rim,rmat));pivot.add(spin);
-  pivot.position.set(sx*.88,.38,fz*t.wb);g.add(pivot);
+  spin.add(new THREE.Mesh(tire,tm),new THREE.Mesh(rim,rmat),new THREE.Mesh(hub,dark));pivot.add(spin);
+  pivot.position.set(sx*.88,.38*ts,fz*t.wb);g.add(pivot);
   wheels.push({pivot,spin,front:fz<0});
  }
  g.traverse(o=>{if(o.isMesh)o.castShadow=true});
@@ -755,7 +765,7 @@ function createGarage(){
  // شبابيك من برا
  for(const x of[hx-22,hx-8,hx+8,hx+22]){box(4,2.6,.25,x,6.5,Z0-T/2-.05,glassM,false);box(4,2.6,.25,x,6.5,Z1+T/2+.05,glassM,false);}
  for(const z of[hz-12,hz+12])box(.25,2.6,4,X1+T/2+.05,6.5,z,glassM,false);
- const mkWelcome=()=>{const c=document.createElement('canvas');c.width=1024;c.height=300;const x=c.getContext('2d');x.fillStyle='#10202a';x.fillRect(0,0,1024,300);x.strokeStyle='#ffc928';x.lineWidth=12;x.strokeRect(8,8,1008,284);x.textAlign='center';x.textBaseline='middle';x.direction='rtl';x.fillStyle='#ffffff';x.font='bold 84px Arial';x.fillText('اهلا بكم في',512,85);x.direction='ltr';x.fillStyle='#ffc928';let fz=120;x.font='bold '+fz+'px Arial';while(x.measureText('Ahmed Saber Game').width>960&&fz>40){fz-=4;x.font='bold '+fz+'px Arial'}x.fillText('Ahmed Saber Game',512,205);const m=new THREE.Mesh(new THREE.PlaneGeometry(12.3,3.6),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(c)}));scene.add(m);return m};
+ const mkWelcome=()=>{const c=document.createElement('canvas');c.width=1024;c.height=300;const x=c.getContext('2d');x.fillStyle='#10202a';x.fillRect(0,0,1024,300);x.strokeStyle='#ffc928';x.lineWidth=12;x.strokeRect(8,8,1008,284);x.textAlign='center';x.textBaseline='middle';x.direction='rtl';x.fillStyle='#ffffff';x.font='bold 84px Arial';x.fillText('اهلا بكم في',512,85);x.direction='ltr';x.fillStyle='#ffc928';let fz=120;x.font='bold '+fz+'px Arial';while(x.measureText('Masr Drive').width>960&&fz>40){fz-=4;x.font='bold '+fz+'px Arial'}x.fillText('Masr Drive',512,205);const m=new THREE.Mesh(new THREE.PlaneGeometry(12.3,3.6),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(c)}));scene.add(m);return m};
  const outSign=mkWelcome();outSign.rotation.y=-Math.PI/2;outSign.position.set(X0-T/2-.15,Y0+9.5,hz);
  const doorSign=mkWelcome();doorSign.rotation.y=Math.PI/2;doorSign.position.set(X0+T/2+.15,Y0+9.5,hz);
  // جوه البيت: حيطة الشمال
@@ -1009,7 +1019,7 @@ const MAXS={'-1':40,1:38,2:78,3:118,4:160,5:205};
 const upgradeMaxLevel=k=>k==='engine'?2:5;
 const upgradeLevel=k=>Math.max(0,Math.min(upgradeMaxLevel(k),Number(save.upgrades?.[k])||0));
 const upgradeCost=(k)=>Math.round(({speed:500,brake:450,handling:400,engine:800}[k]||500)*Math.pow(k==='engine'?1.8:1.62,upgradeLevel(k)));
-function effectiveMaxSpeed(g){return MAXS[g]*(1+upgradeLevel('speed')*.10);}
+function effectiveMaxSpeed(g){return MAXS[g]*(1+upgradeLevel('speed')*.10)*((player&&player.t&&player.t.spd)||1);}
 let speed=0,heading=HOME.heading,steer=0,carPitch=0,carRoll=0;
 let fuel=100,emptyFuelWarned=false,lastRefuelToast=0;
 const FUEL_PRICE_PER_PERCENT=3;
@@ -1762,7 +1772,7 @@ function physics(dt){
   else{
    const mx=skillActive?Math.min(effectiveMaxSpeed(g),SKILL_CAP):effectiveMaxSpeed(g),mn=(g-1)*17;
    if(speed<0)speed+=55*dt;
-   else if(speed<mx){const enginePower=1.45+upgradeLevel('engine')*.38;const pw=(speed<mn*.6?.4:1)*enginePower;speed=Math.min(mx,speed+(16+44/g)*pw*dt)}
+   else if(speed<mx){const enginePower=(1.45+upgradeLevel('engine')*.38)*((player.t&&player.t.acc)||1);const pw=(speed<mn*.6?.4:1)*enginePower;speed=Math.min(mx,speed+(16+44/g)*pw*dt)}
    else speed-=20*dt;
   }
  }else speed-=Math.sign(speed)*6*dt;
@@ -1771,7 +1781,7 @@ function physics(dt){
 
  const target=(k.right?1:0)-(k.left?1:0);
  steer+=(target-steer)*Math.min(1,(skillActive?12:9)*dt);
- heading-=steer*Math.min(1,Math.abs(speed)/16)*((1.9+upgradeLevel('handling')*.15)/(1+Math.abs(speed)/260))*(skillActive?1.0:1)*dt*Math.sign(speed);
+ heading-=steer*Math.min(1,Math.abs(speed)/16)*((1.9+upgradeLevel('handling')*.15)*((player.t&&player.t.hnd)||1)/(1+Math.abs(speed)/260))*(skillActive?1.0:1)*dt*Math.sign(speed);
  const v=speed/3.6,p=P(),lim=skillActive?4000:HALF+60;
  const prevX=p.x,prevZ=p.z;
  const nx=Math.max(-lim,Math.min(lim,p.x-Math.sin(heading)*v*dt));
@@ -1952,24 +1962,20 @@ $('edit').onclick=()=>{
  drawTuning();
 };
 function carShowcaseSvg(index){
- const colors=['#d32f2f','#1565c0','#f6c945','#2e7d32','#c56d35','#eeeeee','#e53935','#607d8b'];
- const paths=[
-  'M45 115 L62 82 Q70 72 108 69 L150 42 Q158 36 177 36 L239 36 Q255 38 270 58 L303 76 L354 84 Q370 88 376 106 L376 122 L45 122 Z',
-  'M48 115 L58 86 L89 75 L125 48 Q135 41 154 41 L230 41 Q245 43 258 62 L286 77 L350 85 Q369 89 374 106 L374 122 L48 122 Z',
-  'M45 115 L61 82 Q70 72 108 69 L150 42 Q158 36 177 36 L239 36 Q255 38 270 58 L303 76 L354 84 Q370 88 376 106 L376 122 L45 122 Z',
-  'M42 115 L48 72 Q50 57 72 53 L255 53 Q275 55 286 76 L350 84 Q372 89 378 108 L378 122 L42 122 Z',
-  'M42 115 L48 83 L80 77 L125 56 L179 56 L205 72 L286 72 L286 53 L338 53 L338 83 L363 88 L378 108 L378 122 L42 122 Z',
-  'M42 115 L48 62 Q52 50 76 47 L292 47 Q321 48 341 72 L363 85 Q378 91 378 108 L378 122 L42 122 Z',
-  'M40 115 L58 91 L104 83 L144 65 L251 65 L286 82 L350 88 L376 108 L376 122 L40 122 Z',
-  'M42 115 L60 84 L102 75 L144 48 L238 48 L272 67 L305 77 L354 84 L377 106 L377 122 L42 122 Z'
- ];
- const color=colors[index%colors.length],path=paths[index%paths.length];
- const windows=index===4?'M143 60 L174 60 L174 73 L118 73 Z M181 60 L199 60 L199 73 L181 73 Z':(index===5?'M87 55 L287 55 L318 74 L76 74 Z':'M151 44 L139 69 L195 69 L195 44 Z M204 44 L204 69 L260 69 L239 44 Z');
- const taxi=index===2?'<rect x="190" y="25" width="42" height="13" rx="3" fill="#ffe082" stroke="#222" stroke-width="2"/>':'';
- return '<svg viewBox="0 0 420 165" role="img" aria-label="معاينة السيارة"><ellipse cx="210" cy="133" rx="165" ry="12" fill="#000" opacity=".4"/><path d="'+path+'" fill="'+color+'" stroke="#111820" stroke-width="3"/><path d="'+windows+'" fill="#9fd7ef" stroke="#263746" stroke-width="4"/><path d="M54 102 L365 102" stroke="#ffffff" stroke-opacity=".25" stroke-width="3"/>'+taxi+'<rect x="349" y="91" width="20" height="9" rx="3" fill="#fff6bd"/><rect x="47" y="94" width="13" height="9" rx="3" fill="#ff6a61"/><circle cx="111" cy="119" r="25" fill="#111820" stroke="#444" stroke-width="4"/><circle cx="111" cy="119" r="13" fill="#c9d0d7"/><circle cx="111" cy="119" r="5" fill="#6b7782"/><circle cx="316" cy="119" r="25" fill="#111820" stroke="#444" stroke-width="4"/><circle cx="316" cy="119" r="13" fill="#c9d0d7"/><circle cx="316" cy="119" r="5" fill="#6b7782"/></svg>';
+ const colors=['#d32f2f','#1565c0','#f6c945','#2e7d32','#c56d35','#eeeeee','#e53935','#607d8b','#ff6f00','#00acc1','#8e24aa','#c0ca33'];
+ const t=CAR_TYPES[index],color=colors[index%colors.length];
+ const X=v=>(42+(v+2.2)*76.4).toFixed(1),Y=v=>(122-(v-.35)*51).toFixed(1);
+ const body=t.pts.map(p=>X(p[0])+' '+Y(p[1])).join(' L');
+ const win=[[t.fa[0]-.12,t.fa[1]+.1],[t.fb[0]-.1,t.fb[1]-.12],[t.rb[0]+.1,t.rb[1]-.12],[t.ra[0]+.12,t.ra[1]+.1]].map(p=>X(p[0])+' '+Y(p[1])).join(' L');
+ const ts=t.ts||1,r=(.42*ts*51).toFixed(1),wy=Y(.38*ts);
+ const L1=Math.max(...t.pts.map(p=>p[0])),L0=Math.min(...t.pts.map(p=>p[0]));
+ const wheel=cx=>'<circle cx="'+cx+'" cy="'+wy+'" r="'+r+'" fill="#111820" stroke="#444" stroke-width="4"/><circle cx="'+cx+'" cy="'+wy+'" r="'+(r*.52).toFixed(1)+'" fill="#c9d0d7"/><circle cx="'+cx+'" cy="'+wy+'" r="'+(r*.2).toFixed(1)+'" fill="#6b7782"/>';
+ const taxi=t.taxi?'<rect x="'+(+X((t.fb[0]+t.rb[0])/2)-21)+'" y="'+(+Y(Math.max(t.fb[1],t.rb[1]))-14)+'" width="42" height="13" rx="3" fill="#ffe082" stroke="#222" stroke-width="2"/>':'';
+ const spoiler=t.spoiler?'<rect x="'+(+X(L0)-2)+'" y="'+(+Y(t.ra[1]+.3))+'" width="26" height="6" rx="2" fill="#111820"/>':'';
+ return '<svg viewBox="0 0 420 165" role="img" aria-label="معاينة السيارة"><ellipse cx="210" cy="133" rx="165" ry="12" fill="#000" opacity=".4"/>'+spoiler+'<path d="M'+body+' Z" fill="'+color+'" stroke="#111820" stroke-width="3"/><path d="M'+win+' Z" fill="#9fd7ef" stroke="#263746" stroke-width="4"/>'+taxi+'<rect x="'+(+X(L1)-20)+'" y="'+Y(.82)+'" width="20" height="9" rx="3" fill="#fff6bd"/><rect x="'+(+X(L0)+3)+'" y="'+Y(.82)+'" width="13" height="9" rx="3" fill="#ff6a61"/>'+wheel(X(t.wb))+wheel(X(-t.wb))+'</svg>';
 }
 $('change').onclick=()=>{
- const prices=[0,2500,5000,8500,6500,7000,12000,9500];
+ const prices=[0,2500,5000,8500,6500,7000,12000,9500,11000,4500,16000,25000];
  let preview=save.type;
  const draw=()=>{
   const t=CAR_TYPES[preview],owned=save.ownedCars.includes(preview),price=prices[preview]||0;
@@ -1977,7 +1983,7 @@ $('change').onclick=()=>{
    '<div class="showCarPreview">'+carShowcaseSvg(preview)+'</div>'+
    '<div style="font-size:25px;font-weight:bold;margin:12px">'+t.name+'</div>'+ 
    '<div style="margin:8px">💰 رصيدك: <b>'+Math.floor(save.money||0)+'</b> جنيه</div>'+
-   '<div style="margin:8px;color:#ffd54a">'+(price===0?'مجانية':'السعر: '+price+' جنيه')+'</div>'+
+   '<div style="margin:8px;color:#ffd54a">'+(price===0?'مجانية':'السعر: '+price+' جنيه')+'</div>'+((t.spd||t.acc||t.hnd)?'<div style="margin:6px;font-size:14px;color:#9fd7ef">⚡ سرعة ×'+(t.spd||1)+' • تسارع ×'+(t.acc||1)+' • تحكم ×'+(t.hnd||1)+'</div>':'')+
    '<div style="margin:8px;color:'+(owned?'#80e8a0':'#ffcc80')+'">'+(owned?'✅ العربية دي في جراجك':'🔒 العربية لسه مش مملوكة')+'</div>'+
    '<button class="btn" id="pp">◀ السابقة</button> '+
    '<button class="btn" id="pn">التالية ▶</button><br><br>'+

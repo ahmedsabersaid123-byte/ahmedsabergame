@@ -1,7 +1,7 @@
 {
-  "name": "Ahmed Saber Game",
-  "short_name": "Saber Game",
-  "description": "لعبة سواقة 3D عربي: مدينة كاملة، مهام، سباقات، وسواقة معلمين",
+  "name": "Masr Drive",
+  "short_name": "Masr Drive",
+  "description": "لعبة سواقة 3D عربي: مدينة كاملة، مهام، سباقات، 12 عربية، وسواقة معلمين",
   "lang": "ar",
   "dir": "rtl",
   "start_url": "./game.html",
