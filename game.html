@@ -903,12 +903,79 @@ let soundEnabled=true,musicEnabled=true,nextMusicNote=0,musicStep=0,audioReady=f
 let engineVol=1.25,musicVol=0.75;
 let brakeGain=null,brakeOsc=null,shiftGain=null,shiftOsc=null;
 const RADIO_STATIONS=[
- {name:'إيقاف',icon:'🔇',melody:null,tempo:0},
- {name:'نغمات شعبية',icon:'🎶',melody:[261.63,329.63,392,523.25,392,329.63,293.66,349.23,440,349.23,293.66,261.63,220,261.63,293.66,329.63],tempo:.28,wave:'square'},
- {name:'بيت إلكترو',icon:'🎧',melody:[110,110,165,110,196,165,146.83,110,130.81,130.81,196,130.81,220,196,164.81,130.81],tempo:.22,wave:'sawtooth'},
- {name:'جاز هادئ',icon:'🎷',melody:[349.23,415.3,466.16,523.25,466.16,415.3,392,349.23,311.13,349.23,392,440,392,349.23,311.13,293.66],tempo:.38,wave:'sine'}
+ {name:'إيقاف',icon:'🔇',bpm:0},
+ {name:'شعبي مصري',icon:'🪘',bpm:98,play(step,t,sd){
+  const s=step&15,bar=(step>>4)&3;
+  if(s===0||s===6||s===10)mDum(t,.5);
+  if(s===4||s===8||s===12||s===14)mTek(t,.22);
+  if(s%2===1)mHat(t,.05);
+  const roots=[38,39,36,38];
+  if(s===0||s===8)mTone(mf(roots[bar]),t,sd*6,'sawtooth',.2,600,.01);
+  if(s===12&&bar%2)mTone(mf(roots[bar]+7),t,sd*3,'sawtooth',.14,600,.01);
+  const L=HIJAZ[bar];for(let i=0;i<L.length;i++)if(L[i][0]===s){mTone(mf(L[i][1]),t,sd*L[i][2]*.9,'sawtooth',.13,2400,.015);mTone(mf(L[i][1]+12),t,sd*L[i][2]*.5,'triangle',.05,3000,.01);}
+ }},
+ {name:'إلكترو درايف',icon:'🎧',bpm:124,play(step,t,sd){
+  const s=step&15,bar=(step>>4)&3;
+  if(s%4===0)mKick(t,.8);
+  if(s===4||s===12)mSnare(t,.35);
+  if(s%2===0)mHat(t,.07,s%4===2);else mHat(t,.03);
+  const roots=[33,29,36,31],ch=[[57,60,64],[53,57,60],[60,64,67],[55,59,62]];
+  if(s%4===2)mTone(mf(roots[bar]+12),t,sd*2.5,'sawtooth',.2,700,.005);
+  if(s===0||s===3||s===6||s===8||s===11||s===14){const c=ch[bar];mTone(mf(c[(s*2+bar)%3]+12),t,sd*1.5,'square',.07,2600,.003);}
+ }},
+ {name:'لو-فاي هادئ',icon:'☕',bpm:78,play(step,t,sd){
+  const s=step&15,bar=(step>>4)&3;
+  if(s===0||s===10)mKick(t,.5);
+  if(s===4||s===12)mSnare(t,.2);
+  if(s%2===0)mHat(t,.04);
+  const chords=[[50,53,57,60],[55,59,62,65],[60,64,67,71],[57,60,64,67]],bass=[38,43,36,33],off=[0,-2,0,-4];
+  if(s===0)chords[bar].forEach(m=>mTone(mf(m),t,sd*14,'triangle',.07,1800,.04));
+  if(s===0||s===10)mTone(mf(bass[bar]),t,sd*6,'sine',.28,0,.01);
+  const mel=[[2,81],[6,79],[10,76],[13,74]];
+  for(let i=0;i<4;i++)if(mel[i][0]===s)mTone(mf(mel[i][1]+off[bar]),t,sd*3,'sine',.11,0,.01);
+ }},
+ {name:'أكشن',icon:'🔥',bpm:140,play(step,t,sd){
+  const s=step&15,bar=(step>>4)&3;
+  if(s===0||s===6||s===8||s===14)mKick(t,.85);
+  if(s===4||s===12)mSnare(t,.38);
+  if(s%2===0)mHat(t,.06);
+  const roots=[28,24,26,28];
+  if(s%2===0)mTone(mf(roots[bar]),t,sd*1.6,'sawtooth',.2,500,.003);
+  const riff=[[0,76,2],[3,74,1],[4,71,2],[8,74,2],[10,71,2],[12,69,3]],sh=[0,-4,-2,0][bar];
+  for(let i=0;i<riff.length;i++)if(riff[i][0]===s)mTone(mf(riff[i][1]+sh),t,sd*riff[i][2]*.9,'square',.09,2200,.005);
+ }}
+];
+const HIJAZ=[
+ [[0,74,2],[2,75,2],[4,78,4],[8,79,2],[10,78,2],[12,75,4]],
+ [[0,75,2],[2,74,2],[4,75,4],[8,78,2],[10,75,2],[12,74,4]],
+ [[0,72,2],[2,74,2],[4,75,4],[8,74,2],[10,72,2],[12,70,4]],
+ [[0,74,4],[4,78,2],[6,79,2],[8,81,4],[12,79,2],[14,78,2]]
 ];
 let radioStation=1; // 0=off
+// ================= موسيقى الراديو (ايقاع + باص + لحن) =================
+const MUS={t:0,step:0,timer:null,noise:null};
+const mf=m=>440*Math.pow(2,(m-69)/12);
+function mNoise(){if(MUS.noise)return MUS.noise;const n=audioCtx.createBuffer(1,audioCtx.sampleRate,audioCtx.sampleRate),d=n.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;MUS.noise=n;return n}
+function mTone(f,t,dur,type,vol,filt,att){
+ att=att||.01;const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type=type;o.frequency.value=f;
+ if(filt){const lp=audioCtx.createBiquadFilter();lp.type='lowpass';lp.frequency.value=filt;o.connect(lp);lp.connect(g)}else o.connect(g);
+ g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(vol,t+att);g.gain.exponentialRampToValueAtTime(.0001,t+att+dur);
+ g.connect(musicGain);o.start(t);o.stop(t+att+dur+.05);
+}
+function mKick(t,v){const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.frequency.setValueAtTime(150,t);o.frequency.exponentialRampToValueAtTime(42,t+.13);g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.0001,t+.22);o.connect(g);g.connect(musicGain);o.start(t);o.stop(t+.25)}
+function mNz(t,dur,freq,q,type,vol){const sr=audioCtx.createBufferSource();sr.buffer=mNoise();const f=audioCtx.createBiquadFilter();f.type=type;f.frequency.value=freq;f.Q.value=q;const g=audioCtx.createGain();g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.0001,t+dur);sr.connect(f);f.connect(g);g.connect(musicGain);sr.start(t,Math.random()*.5);sr.stop(t+dur+.02)}
+function mSnare(t,v){mNz(t,.16,1800,.8,'bandpass',v);mTone(190,t,.09,'triangle',v*.6,0,.002)}
+function mHat(t,v,open){mNz(t,open?.12:.04,7000,.7,'highpass',v)}
+function mDum(t,v){const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.frequency.setValueAtTime(130,t);o.frequency.exponentialRampToValueAtTime(75,t+.14);g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.0001,t+.2);o.connect(g);g.connect(musicGain);o.start(t);o.stop(t+.22)}
+function mTek(t,v){mNz(t,.06,3200,1.4,'bandpass',v)}
+function musicTick(){
+ if(!audioCtx||!musicGain||!musicEnabled)return;
+ const st=RADIO_STATIONS[radioStation];if(!st||!st.bpm||!st.play)return;
+ const sd=60/st.bpm/4,now=audioCtx.currentTime;
+ if(MUS.t<now-.2)MUS.t=now+.05;
+ while(MUS.t<now+.25){try{st.play(MUS.step,MUS.t,sd)}catch(e){}MUS.t+=sd;MUS.step++}
+}
+
 
 function startAudio(){
  try{
@@ -928,16 +995,17 @@ function startAudio(){
    engineDirectGain=audioCtx.createGain();engineDirectGain.gain.value=0;engineDirectGain.connect(masterGain);
    engineMid=audioCtx.createOscillator();engineMid.type='triangle';engineMid.frequency.value=110;const emg=audioCtx.createGain();emg.gain.value=.26;engineMid.connect(emg);emg.connect(engineDirectGain);engineMid.start();
    engineHigh=audioCtx.createOscillator();engineHigh.type='sawtooth';engineHigh.frequency.value=220;const ehg=audioCtx.createGain();ehg.gain.value=.025;engineHigh.connect(ehg);ehg.connect(engineDirectGain);engineHigh.start();
-   musicGain=audioCtx.createGain();musicGain.gain.value=0;musicGain.connect(masterGain);
+   musicGain=audioCtx.createGain();musicGain.gain.value=0;{const mc=audioCtx.createDynamicsCompressor();mc.threshold.value=-18;mc.ratio.value=4;musicGain.connect(mc);mc.connect(masterGain);}
   }
   if(audioCtx.state==='suspended')audioCtx.resume();audioReady=true;
-  engineGain.gain.setTargetAtTime(soundEnabled?0.82*engineVol:0,audioCtx.currentTime,.035);
-  if(engineDirectGain)engineDirectGain.gain.setTargetAtTime(soundEnabled?0.55*engineVol:0,audioCtx.currentTime,.035);
+  engineGain.gain.setTargetAtTime((soundEnabled&&state==='play')?0.82*engineVol:0,audioCtx.currentTime,.035);
+  if(engineDirectGain)engineDirectGain.gain.setTargetAtTime((soundEnabled&&state==='play')?0.55*engineVol:0,audioCtx.currentTime,.035);
   musicGain.gain.setTargetAtTime(musicEnabled?0.78*musicVol:0,audioCtx.currentTime,.035);
   if(musicEnabled&&nextMusicNote===0)nextMusicNote=audioCtx.currentTime+.1;
+  if(!MUS.timer)MUS.timer=setInterval(musicTick,40);
  }catch(e){console.log('Audio unavailable',e)}
 }
-addEventListener('pointerdown',()=>{if(state==='play'||state==='paused')startAudio();},{passive:true});
+addEventListener('pointerdown',()=>{if(state!=='loading')startAudio();},{passive:true});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&audioCtx&&audioCtx.state==='suspended')audioCtx.resume();if(document.hidden){for(const x in k)k[x]=0;if(state==='play'){try{$('pausebtn').onclick()}catch(e){}}}});
 addEventListener('blur',()=>{for(const x in k)k[x]=0;if(state==='play'){try{$('pausebtn').onclick()}catch(e){}}});
 let hornNodes=null;
@@ -991,14 +1059,7 @@ function updateAudio(dt){
  engineGain.gain.setTargetAtTime(soundEnabled?(fuel<=0?0:load*engineVol):0,now,.055);
  if(engineDirectGain)engineDirectGain.gain.setTargetAtTime(soundEnabled?(fuel<=0?0:(.13+throttle*.34+Math.min(.07,v/160*.07))*engineVol):0,now,.06);
  musicGain.gain.setTargetAtTime(musicEnabled?0.78*musicVol:0,now,.08);
- const st=RADIO_STATIONS[radioStation];
- if(musicEnabled&&st&&st.melody&&now>=nextMusicNote){
-  const osc=audioCtx.createOscillator(),gain=audioCtx.createGain();
-  osc.type=st.wave||'triangle';osc.frequency.value=st.melody[musicStep%st.melody.length];
-  const noteLen=Math.max(.12,(st.tempo||.32)*.9);
-  gain.gain.setValueAtTime(.0001,now);gain.gain.exponentialRampToValueAtTime(.34,now+.035);gain.gain.exponentialRampToValueAtTime(.0001,now+noteLen);
-  osc.connect(gain);gain.connect(musicGain);osc.start(now);osc.stop(now+noteLen+.02);musicStep++;nextMusicNote=now+(st.tempo||.32);
- }
+ 
 }
 $('soundbtn').onclick=()=>{soundEnabled=!soundEnabled;save.soundEnabled=soundEnabled;store();startAudio();setAudioLevels(true);$('soundbtn').textContent=soundEnabled?'🔊 الصوت':'🔇 الصوت';};
 function syncRadioBtn(){
@@ -1010,7 +1071,7 @@ $('musicbtn').onclick=()=>{
  radioStation=(radioStation+1)%RADIO_STATIONS.length;
  musicEnabled=radioStation!==0;save.musicEnabled=musicEnabled;save.radioStation=radioStation;store();
  startAudio();setAudioLevels(true);syncRadioBtn();
- musicStep=0;if(musicEnabled&&audioCtx)nextMusicNote=audioCtx.currentTime+.05;
+ musicStep=0;MUS.step=0;MUS.t=0;if(musicEnabled&&audioCtx)nextMusicNote=audioCtx.currentTime+.05;
  toast(radioStation===0?'🔇 الراديو مقفول':('📻 '+(RADIO_STATIONS[radioStation].name)));
 };
 
@@ -2050,7 +2111,7 @@ function setAudioLevels(force){
  if(!audioCtx||!engineGain||!musicGain)return;
  const now=audioCtx.currentTime;
  engineGain.gain.cancelScheduledValues(now);musicGain.gain.cancelScheduledValues(now);
- engineGain.gain.setTargetAtTime(soundEnabled?0.82*engineVol:0,now,.025);
+ engineGain.gain.setTargetAtTime((soundEnabled&&state==='play')?0.82*engineVol:0,now,.025);
  musicGain.gain.setTargetAtTime(musicEnabled?0.78*musicVol:0,now,.025);
 }
 function pausePanel(){
