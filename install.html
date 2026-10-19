@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ثبّت Masr Drive</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<meta name="theme-color" content="#0d1117">
+<style>
+*{box-sizing:border-box;margin:0}
+body{font-family:system-ui,-apple-system,"Segoe UI",Tahoma,sans-serif;background:#0d1117;color:#e6edf3;min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:20px;text-align:center;line-height:1.7}
+main{max-width:380px;width:100%;display:flex;flex-direction:column;align-items:center;gap:14px}
+img{width:96px;height:96px;border-radius:22px}
+p{color:#8b949e}
+button,.play{border:0;border-radius:12px;padding:14px 22px;font-size:18px;font-weight:600;color:#fff;background:#2f81f7;width:100%;text-decoration:none;display:block}
+.play{background:transparent;border:1px solid #2a313c;color:#e6edf3;font-size:16px}
+#msg{min-height:24px;font-size:15px}
+[hidden]{display:none!important}
+</style></head><body>
+<main>
+ <img src="icon-192.png" alt="Masr Drive">
+ <h1>Masr Drive</h1>
+ <p>ثبّت اللعبة على موبايلك وافتحها زي أي تطبيق، وتشتغل حتى من غير نت.</p>
+ <button id="ins" hidden>⬇ تثبيت اللعبة</button>
+ <p id="msg"></p>
+ <a class="play" href="./">▶ العب بدون تثبيت</a>
+</main>
+<script>
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(function(){});
+var dp=null,ins=document.getElementById('ins'),msg=document.getElementById('msg');
+var done=matchMedia('(display-mode: standalone)').matches||navigator.standalone;
+if(done){msg.textContent='اللعبة مثبّتة عندك بالفعل ✅'}
+else{
+ addEventListener('beforeinstallprompt',function(e){e.preventDefault();dp=e;ins.hidden=false;msg.textContent=''});
+ setTimeout(function(){if(!dp&&!done)msg.textContent='لو زرار التثبيت مش ظاهر: من قايمة المتصفح (⋮) اختار «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية». وعلى الآيفون: زرار المشاركة ثم «إضافة إلى الشاشة الرئيسية».'},3000);
+}
+ins.onclick=function(){if(!dp)return;dp.prompt();dp.userChoice.then(function(r){dp=null;ins.hidden=true;msg.textContent=r.outcome==='accepted'?'تم التثبيت ✅ هتلاقيها على الشاشة الرئيسية':'ماتثبتتش. تقدر تحاول تاني.'})};
+addEventListener('appinstalled',function(){ins.hidden=true;msg.textContent='تم التثبيت ✅'});
+</script></body></html>
