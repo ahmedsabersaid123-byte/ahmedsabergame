@@ -30,18 +30,8 @@ var done=matchMedia('(display-mode: standalone)').matches||navigator.standalone;
 if(done){ins.hidden=true;msg.textContent='اللعبة مثبّتة عندك بالفعل ✅'}
 addEventListener('beforeinstallprompt',function(e){e.preventDefault();dp=e});
 addEventListener('appinstalled',function(){ins.hidden=true;msg.textContent='تم التثبيت ✅ هتلاقيها على الشاشة الرئيسية'});
-function help(){
- var out=[];
- fetch('manifest.webmanifest').then(function(r){if(!r.ok)throw 0;return r.json()}).then(function(m){
-  var sz=(m.icons||[]).map(function(i){return i.sizes}).join(' ');
-  if(!m.start_url)out.push('ملف manifest من غير start_url');
-  if(!/192/.test(sz)||!/512/.test(sz))out.push('الأيقونات لازم تكون 192 و512');
-  if(['standalone','fullscreen','minimal-ui'].indexOf(m.display)<0)out.push('display لازم يكون standalone');
- },function(){out.push('ملف manifest.webmanifest مش بيتحمّل')}).then(function(){
-  if(!navigator.serviceWorker||!navigator.serviceWorker.controller)out.push('الخدمة لسه ماشتغلتش، حدّث الصفحة وجرّب تاني');
-  msg.textContent='المتصفح مش مدّي إذن التثبيت دلوقتي. تقدر تثبّتها من قايمة المتصفح (⋮) ← «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية». وعلى الآيفون: زرار المشاركة ← «إضافة إلى الشاشة الرئيسية».'+(out.length?' | سبب محتمل: '+out.join('، '):'')})}
 ins.onclick=function(){
- if(!dp){help();return}
+ if(!dp){msg.textContent='المتصفح مش مدّي إذن التثبيت من هنا، هفتحلك اللعبة. ومن قايمة Chrome (⋮) اختار «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية».';setTimeout(function(){location.href='./'},2500);return}
  dp.prompt();dp.userChoice.then(function(r){dp=null;msg.textContent=r.outcome==='accepted'?'تم التثبيت ✅ هتلاقيها على الشاشة الرئيسية':'ماتثبتتش. تقدر تدوس تاني.'})};
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(function(){});
 </script></body></html>
