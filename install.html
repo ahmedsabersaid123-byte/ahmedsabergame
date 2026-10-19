@@ -20,19 +20,28 @@ button,.play{border:0;border-radius:12px;padding:14px 22px;font-size:18px;font-w
  <img src="icon-192.png" alt="Masr Drive">
  <h1>Masr Drive</h1>
  <p>ثبّت اللعبة على موبايلك وافتحها زي أي تطبيق، وتشتغل حتى من غير نت.</p>
- <button id="ins" hidden>⬇ تثبيت اللعبة</button>
+ <button id="ins">⬇ تثبيت</button>
  <p id="msg"></p>
- <a class="play" href="./">▶ العب بدون تثبيت</a>
 </main>
 <script>
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(function(){});
 var dp=null,ins=document.getElementById('ins'),msg=document.getElementById('msg');
 var done=matchMedia('(display-mode: standalone)').matches||navigator.standalone;
-if(done){msg.textContent='اللعبة مثبّتة عندك بالفعل ✅'}
-else{
- addEventListener('beforeinstallprompt',function(e){e.preventDefault();dp=e;ins.hidden=false;msg.textContent=''});
- setTimeout(function(){if(!dp&&!done)msg.textContent='لو زرار التثبيت مش ظاهر: من قايمة المتصفح (⋮) اختار «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية». وعلى الآيفون: زرار المشاركة ثم «إضافة إلى الشاشة الرئيسية».'},3000);
-}
-ins.onclick=function(){if(!dp)return;dp.prompt();dp.userChoice.then(function(r){dp=null;ins.hidden=true;msg.textContent=r.outcome==='accepted'?'تم التثبيت ✅ هتلاقيها على الشاشة الرئيسية':'ماتثبتتش. تقدر تحاول تاني.'})};
-addEventListener('appinstalled',function(){ins.hidden=true;msg.textContent='تم التثبيت ✅'});
+if(done){ins.hidden=true;msg.textContent='اللعبة مثبّتة عندك بالفعل ✅'}
+addEventListener('beforeinstallprompt',function(e){e.preventDefault();dp=e});
+addEventListener('appinstalled',function(){ins.hidden=true;msg.textContent='تم التثبيت ✅ هتلاقيها على الشاشة الرئيسية'});
+function help(){
+ var out=[];
+ fetch('manifest.webmanifest').then(function(r){if(!r.ok)throw 0;return r.json()}).then(function(m){
+  var sz=(m.icons||[]).map(function(i){return i.sizes}).join(' ');
+  if(!m.start_url)out.push('ملف manifest من غير start_url');
+  if(!/192/.test(sz)||!/512/.test(sz))out.push('الأيقونات لازم تكون 192 و512');
+  if(['standalone','fullscreen','minimal-ui'].indexOf(m.display)<0)out.push('display لازم يكون standalone');
+ },function(){out.push('ملف manifest.webmanifest مش بيتحمّل')}).then(function(){
+  if(!navigator.serviceWorker||!navigator.serviceWorker.controller)out.push('الخدمة لسه ماشتغلتش، حدّث الصفحة وجرّب تاني');
+  msg.textContent='المتصفح مش مدّي إذن التثبيت دلوقتي. تقدر تثبّتها من قايمة المتصفح (⋮) ← «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية». وعلى الآيفون: زرار المشاركة ← «إضافة إلى الشاشة الرئيسية».'+(out.length?' | سبب محتمل: '+out.join('، '):'')})}
+ins.onclick=function(){
+ if(!dp){help();return}
+ dp.prompt();dp.userChoice.then(function(r){dp=null;msg.textContent=r.outcome==='accepted'?'تم التثبيت ✅ هتلاقيها على الشاشة الرئيسية':'ماتثبتتش. تقدر تدوس تاني.'})};
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(function(){});
 </script></body></html>
